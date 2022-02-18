@@ -18,22 +18,24 @@ _picklistOutgoingFolder = "Picklists Out"
 _printerfiles = glob(path.join(_picklistIncomingFolder,"*.{}".format("pdf")))
 _printerfilecount = len(_printerfiles)
 
-_labelers = ["ZDesigner GK420d","ZDesigner GK420d-2"]
+_labelers = ["ZDesigner GK420d","ZDesigner GX420d"]
 _labelIncomingFolder = "Labels In"
 _labelOutgoingFolder = "Labels Out"
 _labelfiles = glob(path.join(_labelIncomingFolder,"*.{}".format("pdf")))
 _labelfilecount = len(_labelfiles)
 
+GHOSTSCRIPT_PATH = 'GHOSTSCRIPT\\bin\\gswin32.exe'
+GSPRINT_PATH = 'GSPRINT\\gsprint.exe'
+
 def printBatch(labeler, labels, printer, picklist):
-    GHOSTSCRIPT_PATH = 'GHOSTSCRIPT\\bin\\gswin32.exe'
-    GSPRINT_PATH = 'GSPRINT\\gsprint.exe'
 
     print("Printing picklist...")
     win32api.ShellExecute(0, 'open', GSPRINT_PATH, '-ghostscript "'+GHOSTSCRIPT_PATH+'" -printer "'+printer+'" "'+picklist+'"', '.', 0)
+    time.sleep(1)
 
     print("Printing labels...")
     win32api.ShellExecute(0, 'open', GSPRINT_PATH, '-ghostscript "'+GHOSTSCRIPT_PATH+'" -printer "'+labeler+'" "'+labels+'"', '.', 0)
-
+    time.sleep(1)
     print("Done!")
 
 #==============================#
@@ -65,7 +67,7 @@ if res == "":
             print("")
             print("Printing file pair: ",str(x + 1))
 
-            picklist = [s for s in _printerfiles if "Batch " + str(x + 1) + " picklist" in s][0]
+            picklist = [s for s in _printerfiles if "Batch " + str(x + 1) + " Picklist" in s][0]
             if not picklist:
                 print("Error during fetching picklist.")
                 exit(-69)
