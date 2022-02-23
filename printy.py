@@ -13,15 +13,16 @@ from glob import glob
 from subprocess import call
 
 _printer = "Canon MF240 Series UFRII LT"
-_picklistIncomingFolder = "Picklists In"
-_picklistOutgoingFolder = "Picklists Out"
-_printerfiles = glob(path.join(_picklistIncomingFolder,"*.{}".format("pdf")))
-_printerfilecount = len(_printerfiles)
+_picklistIncomingFolder = "Batch In"
+_picklistOutgoingFolder = "Batch Out"
+_picklistIncomingPDFs = glob(path.join(_picklistIncomingFolder,"*.{}".format("pdf")))
+_picklists = [s for s in _picklistIncomingPDFs if "picklist" in s.lower()]
 
 _labelers = ["ZDesigner GK420d","ZDesigner GX420d"]
-_labelIncomingFolder = "Labels In"
-_labelOutgoingFolder = "Labels Out"
-_labelfiles = glob(path.join(_labelIncomingFolder,"*.{}".format("pdf")))
+_labelIncomingFolder = "Batch In"
+_labelOutgoingFolder = "Batch Out"
+_labelIncomingPDFs = glob(path.join(_labelIncomingFolder,"*.{}".format("pdf")))
+_labels = [s for s in _labelIncomingPDFs if "labels" in s.lower()]
 _labelfilecount = len(_labelfiles)
 
 GHOSTSCRIPT_PATH = 'GHOSTSCRIPT\\bin\\gswin32.exe'
@@ -44,38 +45,44 @@ def printBatch(labeler, labels, printer, picklist):
 # remember: run with F5
 
 print("Printer:",_printer)
-print('Printer Folder:', _picklistIncomingFolder)
-print('Printer File Count:', str(_printerfilecount))
+print('Picklist Folder:', _picklistIncomingFolder)
+print('Picklist Count:', str(len(_picklists)))
 print("")
 
 print("Labelers:",_labelers)
 print('Label Folder:', _labelIncomingFolder)
-print('Label File Count:', str(_labelfilecount))
+print('Label File Count:', str(len(_labels)))
 print("")
 
 res = input("Press enter to start.")
 if res == "":
-    if(len(_printerfiles) != len(_labelfiles)):
+    if(len(_picklists) != len(_labelfiles)):
         print("Error, picklists and batches are not equal.")
         exit(-69)
 
     x = 0
-    while x < len(_printerfiles):
+    while x < len(_picklists):
         picklistsToMove = []
         labelsToMove = []
         for _labeler in _labelers:
             print("")
             print("Printing file pair: ",str(x + 1))
 
-            picklist = [s for s in _printerfiles if "Batch " + str(x + 1) + " Picklist" in s][0]
+            picklist = [s for s in _picklists if "batch " + str(x + 1) + " labels" in s.lower()][0]
             if not picklist:
-                print("Error during fetching picklist.")
-                exit(-69)
+                res = input("Picklist for batch " + str(x) + " not found. Continue to next batch? Y/N")
+                if res == "Y":
+                    continue
+                else:
+                    exit(420)
 
-            labels = [s for s in _labelfiles if "Batch " + str(x + 1) + " labels" in s][0]
+            labels = [s for s in _labels if "batch " + str(x + 1) + " labels" in s.lower()][0]
             if not labels:
-                print("Error during fetching labels.")
-                exit(-69)
+                res = input("Labels for batch " + str(x) + " not found. Continue to next batch? Y/N")
+                if res == "Y":
+                    continue
+                else:
+                    exit(420)
 
             print("Printer:",_printer)
             print("Picklist:",picklist)
@@ -88,7 +95,7 @@ if res == "":
             labelsToMove.append(labels)
 
             x += 1
-            if x >= len(_printerfiles):
+            if x >= len(_picklists):
                 break
 
         res = input("Did the files print successfully? Y/N")
@@ -103,7 +110,7 @@ if res == "":
         else:
             print("Well shit, that's too bad.")
             exit(-69)
-        if x < len(_printerfiles) - 1:
+        if x < len(_picklists) - 1:
             res = input("Continue to next files? Y/N")
             if res == "Y":
                 continue
